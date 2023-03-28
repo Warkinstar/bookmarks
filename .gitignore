@@ -1,0 +1,14 @@
+# db
+*.sqlite3
+
+# py
+__pycache__/
+*.pyc
+
+# venv
+.venv/
+
+# idea
+.idea/
+
+*.log
