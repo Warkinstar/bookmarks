@@ -155,6 +155,14 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ["email"]  # extra permissions from facebook
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 
+# Twitter auth
+"""
+Twitter usually fails with a 401 error when trying to call the request-token URL, this is usually caused by server 
+datetime errors (check miscellaneous section). Installing ntp and syncing the server date with some pool does the trick.
+"""
+SOCIAL_AUTH_TWITTER_KEY = env("SOCIAL_AUTH_TWITTER_KEY")
+SOCIAL_AUTH_TWITTER_SECRET = env("SOCIAL_AUTH_TWITTER_SECRET")
+
 # set of functions during social authentication flow.
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",
