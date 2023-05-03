@@ -1,5 +1,9 @@
 from django import forms
 from .models import Image
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
+import requests
+from unidecode import unidecode
 
 
 class ImageCreateForm(forms.ModelForm):
@@ -19,3 +23,20 @@ class ImageCreateForm(forms.ModelForm):
                 "Переданный URL не соответствует допустимому расширению."
             )
         return url
+
+    def save(self, force_insert=False, force_update=False, commit=True):
+        image = super().save(commit=False)
+        # print(self.cleaned_data["url"])  # проверить checked
+        # print(image.url)  # проверить
+        image_url = self.cleaned_data[
+            "url"
+        ]  # - поле формы. image.url - поле модели (сохраненное в бд)
+        name = slugify(unidecode(image.title))
+        extension = image_url.rsplit(".", 1)[1].lower()
+        image_name = f"{name}.{extension}"
+        # download image from given url
+        response = requests.get(image_url)
+        image.image.save(image_name, ContentFile(response.content), save=False)
+        if commit:
+            image.save()
+        return image
