@@ -19,11 +19,32 @@ r = redis.Redis(
 
 def image_detail(request, id, slug):
     image = get_object_or_404(Image, id=id, slug=slug)
-    total_views = r.incr(f"image:{image.pk}:views")
+    # Инкременция ключ значение
+    total_views = r.incr(f"image:{image.pk}:views")  # # image:6:views - 8
+    # increment image ranking by 1. Инкременция по РАНГУ
+    r.zincrby("image_ranking", 1, image.pk)
     return render(
         request,
         "images/image/detail.html",
         {"section": "images", "image": image, "total_views": total_views},
+    )
+
+
+@login_required
+def image_ranking(request):
+    """Сортирует список по самым просматриваемым постам"""
+    # get image ranking. Список id по рейтингу по убыванию
+    image_ranking = r.zrange("image_ranking", 0, -1, desc=True)[:10]  # [b'10', b'6', b'2']
+    # Целочисленные упорядоченные значения id изображений в список
+    image_ranking_ids = [int(id) for id in image_ranking]  # [10, 6, 2]
+    # Список объектов Image
+    most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))  # [<Image: Amazon.com. Spend less. Smile more.>, <Image: Amazon.com - Today's Deals>, <Image: Django and Duke>]
+    # Список объектов изображений по порядку image_ranking
+    most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))  # [<Image: Amazon.com - Today's Deals>, <Image: Amazon.com. Spend less. Smile more.>, <Image: Django and Duke>]
+    return render(
+        request,
+        "images/image/ranking.html",
+        {"section": "images", "most_viewed": most_viewed},
     )
 
 
